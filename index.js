@@ -4,7 +4,7 @@ function createBot() {
   const bot = mineflayer.createBot({
     host: 'eu.freegamehost.xyz',
     port: 25493,
-    username: 'AFK_Bot'
+    username: 'DOOMCORE'
   })
 
   bot.on('spawn', () => {
