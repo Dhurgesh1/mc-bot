@@ -4,7 +4,7 @@ let bot = null
 let reconnecting = false
 
 function createBot() {
-  if (bot) return // 🚫 prevent duplicate bots
+  if (bot) return
 
   bot = mineflayer.createBot({
     host: 'eu.freegamehost.xyz',
@@ -17,17 +17,28 @@ function createBot() {
   bot.on('spawn', () => {
     console.log('Bot joined!')
 
-    // ✅ Teleport to your AFK coords
+    // ⏳ wait for full load (VERY IMPORTANT)
     setTimeout(() => {
-      bot.chat('/tp DOOMCORE 0.48 88.5 12.43')
-    }, 3000)
 
-    // ✅ Anti-AFK (safe)
-    setInterval(() => {
-      if (!bot) return
-      bot.setControlState('jump', true)
-      setTimeout(() => bot.setControlState('jump', false), 400)
-    }, 30000)
+      // ✅ teleport AFTER loading
+      bot.chat('/tp DOOMCORE 0.48 88.5 12.43')
+
+      // ⏳ wait again before actions
+      setTimeout(() => {
+
+        // ✅ SAFE anti-AFK (look around instead of jumping)
+        setInterval(() => {
+          if (!bot) return
+
+          const yaw = Math.random() * Math.PI * 2
+          const pitch = (Math.random() - 0.5) * Math.PI / 2
+
+          bot.look(yaw, pitch, true)
+        }, 30000)
+
+      }, 5000)
+
+    }, 5000)
   })
 
   bot.on('end', () => {
@@ -49,5 +60,5 @@ function createBot() {
   bot.on('error', err => console.log('Error:', err))
 }
 
-// ⏳ small delay prevents double start (Replit fix)
+// prevent double start (Replit fix)
 setTimeout(createBot, 2000)
