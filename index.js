@@ -2,6 +2,7 @@ const mineflayer = require('mineflayer')
 
 let bot = null
 let reconnecting = false
+let afkInterval = null
 
 function createBot() {
   if (bot) return
@@ -14,37 +15,44 @@ function createBot() {
     auth: 'offline'
   })
 
-  bot.on('spawn', () => {
+  bot.once('spawn', () => {
     console.log('Bot joined!')
 
-    // ⏳ wait for full load (VERY IMPORTANT)
+    // ✅ WAIT LONGER (important for Paper servers)
     setTimeout(() => {
 
-      // ✅ teleport AFTER loading
+      // ✅ teleport safely
       bot.chat('/tp DOOMCORE 0.48 88.5 12.43')
 
-      // ⏳ wait again before actions
+      // ✅ start anti-AFK AFTER full stabilization
       setTimeout(() => {
 
-        // ✅ SAFE anti-AFK (look around instead of jumping)
-        setInterval(() => {
-          if (!bot) return
+        if (afkInterval) clearInterval(afkInterval)
 
-          const yaw = Math.random() * Math.PI * 2
-          const pitch = (Math.random() - 0.5) * Math.PI / 2
+        afkInterval = setInterval(() => {
+          if (!bot || !bot.entity) return
+
+          // VERY SAFE movement (tiny head movement)
+          const yaw = bot.entity.yaw + (Math.random() - 0.5) * 0.2
+          const pitch = bot.entity.pitch + (Math.random() - 0.5) * 0.1
 
           bot.look(yaw, pitch, true)
         }, 30000)
 
-      }, 5000)
+      }, 10000) // increased delay
 
-    }, 5000)
+    }, 8000) // increased delay
   })
 
   bot.on('end', () => {
     console.log('Disconnected')
 
     bot = null
+
+    if (afkInterval) {
+      clearInterval(afkInterval)
+      afkInterval = null
+    }
 
     if (!reconnecting) {
       reconnecting = true
@@ -61,4 +69,4 @@ function createBot() {
 }
 
 // prevent double start (Replit fix)
-setTimeout(createBot, 2000)
+setTimeout(createBot, 3000)
